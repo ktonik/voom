@@ -6,7 +6,7 @@ A collection of ready-to-use animation templates for Webflow projects.
 
 Add this script to your project before the closing `</body>` tag:
 
-<script src="https://cdn.jsdelivr.net/gh/ktonik/voom@v.0.1.0-alpha/dist/voom-demo.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/ktonik/voom@v0.1.0-alpha/dist/voom-demo.min.js"></script>
 
 
 ## Dependencies
