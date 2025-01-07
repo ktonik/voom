@@ -1,0 +1,24 @@
+{
+  "name": "voom-animation-templates",
+  "version": "1.0.0",
+  "description": "Animation from voom.sh",
+  "main": "dist/voom-demo.min.js",
+  "scripts": {
+    "build": "terser dist/voom-demo.full.js -o dist/voom-demo.min.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/<your-username>/voom.git"
+  },
+  "keywords": [
+    "webflow",
+    "animations",
+    "gsap",
+    "split-type"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "terser": "^5.24.0"
+  }
+} 
