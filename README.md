@@ -8,7 +8,7 @@ Add this script to your project before the closing `</body>` tag:
 
 ```html
 
-<script src="https://cdn.jsdelivr.net/gh/ktonik/voom@v0.1.0-alpha/dist/voom-demo.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/ktonik/voom@v1.0.0-beta/dist/voom-demo.min.js"></script>
 
 ```
 
