@@ -7,7 +7,10 @@ A collection of ready-to-use animation templates for Webflow projects.
 Add this script to your project before the closing `</body>` tag:
 
 ```html
+<!-- Always latest version (recommended) -->
+<script src="https://cdn.jsdelivr.net/gh/ktonik/voom/dist/voom-demo.min.js"></script>
 
+<!-- Specific version -->
 <script src="https://cdn.jsdelivr.net/gh/ktonik/voom@v1.0.0-beta/dist/voom-demo.min.js"></script>
 
 ```
