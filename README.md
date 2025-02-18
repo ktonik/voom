@@ -9,11 +9,14 @@ Add this script to your project before the closing `</body>` tag:
 ```html
 <!-- Always latest version (recommended) -->
 <script src="https://cdn.jsdelivr.net/gh/ktonik/voom/dist/voom-demo.min.js"></script>
+```
 
+Current version: 1.0.0-beta
+```html
 <!-- Specific version -->
 <script src="https://cdn.jsdelivr.net/gh/ktonik/voom@v1.0.0-beta/dist/voom-demo.min.js"></script>
-
 ```
+
 
 ## Dependencies
 This script automatically loads:
