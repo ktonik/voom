@@ -104,6 +104,75 @@ function replayAnimation(targetId) {
   }
 }
 
+// Create initialization function
+function initializeAnimations() {
+  // Apply animations to elements
+  Object.entries(animations).forEach(([type, config]) => {
+    const elements = document.querySelectorAll(`[voomsh="${type}"]`);
+    elements.forEach(element => applyTrigger(element, config));
+  });
+
+  // Set up replay buttons
+  const replayButtons = document.querySelectorAll('[voomsh="replay"]');
+  replayButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      const targetId = button.getAttribute('voomreplay-for');
+      if (targetId) {
+        replayAnimation(targetId);
+      }
+    });
+  });
+
+  // Button animations (btn_1)
+  const buttons = document.querySelectorAll('[voomsh="btn_1"]');
+  buttons.forEach(button => {
+    // Initial setup
+    gsap.set(button, { opacity: 1 });
+
+    // Store initial padding values
+    const computedStyle = window.getComputedStyle(button);
+    button.dataset.initialPaddingLeft = parseFloat(computedStyle.paddingLeft);
+    button.dataset.initialPaddingRight = parseFloat(computedStyle.paddingRight);
+
+    button.addEventListener('mouseenter', () => {
+      gsap.to(button, {
+        paddingLeft: parseFloat(button.dataset.initialPaddingLeft) * 1.2,
+        paddingRight: parseFloat(button.dataset.initialPaddingRight) * 1.2,
+        scale: 1.05,
+        duration: 0.3,
+        ease: "back.out(3)"
+      });
+    });
+
+    button.addEventListener('mouseleave', () => {
+      gsap.to(button, {
+        paddingLeft: parseFloat(button.dataset.initialPaddingLeft),
+        paddingRight: parseFloat(button.dataset.initialPaddingRight),
+        scale: 1,
+        duration: 0.3,
+        ease: "back.out(1)"
+      });
+    });
+
+    // Add click state
+    button.addEventListener('mousedown', () => {
+      gsap.to(button, {
+        scale: 1,
+        duration: 0.1,
+        ease: "power2.out"
+      });
+    });
+
+    button.addEventListener('mouseup', () => {
+      gsap.to(button, {
+        scale: 1.05,
+        duration: 0.1,
+        ease: "power2.out"
+      });
+    });
+  });
+}
+
 // Load all scripts in sequence
 Promise.all([
   loadScript('https://unpkg.com/split-type'),
@@ -115,73 +184,13 @@ Promise.all([
       // Initialize GSAP plugins
       gsap.registerPlugin(ScrollTrigger);
 
-      window.Webflow ||= [];
-      window.Webflow.push(() => {
-        // Apply animations to elements
-        Object.entries(animations).forEach(([type, config]) => {
-          const elements = document.querySelectorAll(`[voomsh="${type}"]`);
-          elements.forEach(element => applyTrigger(element, config));
-        });
-
-        // Set up replay buttons
-        const replayButtons = document.querySelectorAll('[voomsh="replay"]');
-        replayButtons.forEach(button => {
-          button.addEventListener('click', () => {
-            const targetId = button.getAttribute('voomreplay-for');
-            if (targetId) {
-              replayAnimation(targetId);
-            }
-          });
-        });
-
-        // Button animations (btn_1)
-        const buttons = document.querySelectorAll('[voomsh="btn_1"]');
-        buttons.forEach(button => {
-          // Initial setup
-          gsap.set(button, { opacity: 1 });
-
-          // Store initial padding values
-          const computedStyle = window.getComputedStyle(button);
-          button.dataset.initialPaddingLeft = parseFloat(computedStyle.paddingLeft);
-          button.dataset.initialPaddingRight = parseFloat(computedStyle.paddingRight);
-
-          button.addEventListener('mouseenter', () => {
-            gsap.to(button, {
-              paddingLeft: parseFloat(button.dataset.initialPaddingLeft) * 1.2,
-              paddingRight: parseFloat(button.dataset.initialPaddingRight) * 1.2,
-              scale: 1.05,
-              duration: 0.3,
-              ease: "back.out(3)"
-            });
-          });
-
-          button.addEventListener('mouseleave', () => {
-            gsap.to(button, {
-              paddingLeft: parseFloat(button.dataset.initialPaddingLeft),
-              paddingRight: parseFloat(button.dataset.initialPaddingRight),
-              scale: 1,
-              duration: 0.3,
-              ease: "back.out(1)"
-            });
-          });
-
-          // Add click state
-          button.addEventListener('mousedown', () => {
-            gsap.to(button, {
-              scale: 1,
-              duration: 0.1,
-              ease: "power2.out"
-            });
-          });
-
-          button.addEventListener('mouseup', () => {
-            gsap.to(button, {
-              scale: 1.05,
-              duration: 0.1,
-              ease: "power2.out"
-            });
-          });
-        });
-      });
+      // Initialize in Webflow context if available
+      if (window.Webflow) {
+        window.Webflow ||= [];
+        window.Webflow.push(initializeAnimations);
+      } else {
+        // Initialize directly if not in Webflow
+        initializeAnimations();
+      }
     });
 }); 
