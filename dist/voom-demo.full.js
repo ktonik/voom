@@ -127,6 +127,9 @@ const animations = {
 // Store animation instances for cleanup and replay functionality
 const instances = new Map();
 
+// Make instances accessible globally
+window.voomInstances = instances;
+
 /**
  * Load required external dependencies
  * Returns Promise<boolean> indicating success/failure
