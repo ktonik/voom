@@ -1,6 +1,6 @@
 {
   "name": "voom-animation-demo",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "voom.sh animation demo",
   "main": "dist/voom-demo.min.js",
   "scripts": {

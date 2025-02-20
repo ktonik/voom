@@ -2,3 +2,4 @@
 /body scripts.html
 /node_modules
 /test_files
+.DS_Store
