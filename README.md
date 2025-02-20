@@ -13,7 +13,7 @@ Always latest version (recommended):
 
 Current version: 1.0.1-beta
 ```html
-<script src="https://cdn.jsdelivr.net/gh/ktonik/voom@v1.0.2-beta/dist/voom-demo.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/ktonik/voom@v1.0.2/dist/voom-demo.min.js"></script>
 ```
 
 ## Dependencies
