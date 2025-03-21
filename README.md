@@ -15,15 +15,14 @@ Current version:
 
 ## Usage
 
-You can trigger animations using either HTML classes or attributes. 
+Add animations using HTML classes or attributes. 
 Choose whichever is easier for you:
 
 
-### Using Classes
-For Wordpress (Elementor, Gutenberg and other builders)
+### Add Class
+For Wordpress (Elementor, Gutenberg and other builders), add class name for example `"voomsh-hdr-1"`
 
 ```html
-<!-- Same animations using classes -->
 <h1 class="voomsh-hdr-1">
   This header will animate
 </h1>
@@ -37,8 +36,8 @@ For Wordpress (Elementor, Gutenberg and other builders)
 </button>
 ```
 
-### Using Attributes
-For Webflow (via setting panel)
+### Add Attribute
+For Webflow (via setting panel) add attribute name, for example `voomsh="hdr-1"`
 
 ```html
 <!-- Header animation -->
@@ -56,6 +55,8 @@ For Webflow (via setting panel)
   Hover & Click Me
 </button>
 ```
+
+### Thats it, you are good to go! 
 
 ## Dependencies
 This script automatically loads:
