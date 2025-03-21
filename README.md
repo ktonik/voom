@@ -1,6 +1,8 @@
-# Voom Animation Templates
+# Voom.sh Animations
 
-A collection of ready-to-use animation templates for Webflow projects.
+A collection of ready-to-use animation for Wordpress, Webflow and HTML websites
+[![Watch the demo](https://img.youtube.com/vi/Uy-hrW0gmy4/0.jpg)](https://youtu.be/Uy-hrW0gmy4)
+
 
 ## Quick Start
 
@@ -13,9 +15,31 @@ Current version:
 
 ## Usage
 
-You can trigger animations using either HTML attributes or classes - choose whichever is easier for you:
+You can trigger animations using either HTML classes or attributes. 
+Choose whichever is easier for you:
+
+
+### Using Classes
+For Wordpress (Elementor, Gutenberg and other builders)
+
+```html
+<!-- Same animations using classes -->
+<h1 class="voomsh-hdr-1">
+  This header will animate
+</h1>
+
+<p class="voomsh-par-1">
+  This paragraph will animate line by line
+</p>
+
+<button class="voomsh-btn-1">
+  Hover & Click Me
+</button>
+```
 
 ### Using Attributes
+For Webflow (via setting panel)
+
 ```html
 <!-- Header animation -->
 <h1 voomsh="hdr-1">
@@ -29,22 +53,6 @@ You can trigger animations using either HTML attributes or classes - choose whic
 
 <!-- Button animation -->
 <button voomsh="btn-1">
-  Hover & Click Me
-</button>
-```
-
-### Using Classes
-```html
-<!-- Same animations using classes -->
-<h1 class="voomsh-hdr-1">
-  This header will animate
-</h1>
-
-<p class="voomsh-par-1">
-  This paragraph will animate line by line
-</p>
-
-<button class="voomsh-btn-1">
   Hover & Click Me
 </button>
 ```
