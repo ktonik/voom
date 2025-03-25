@@ -18,6 +18,19 @@ const SELECTORS = {
 // Add mobile detection utility
 const isMobile = () => window.innerWidth < 768;
 
+// Add this function after SELECTORS definition
+function setInitialState() {
+  // Set initial opacity: 0 for all animated elements using native JavaScript
+  Object.keys(animations).forEach(type => {
+    document.querySelectorAll(SELECTORS.getAnimationElements(type))
+      .forEach(element => {
+        element.style.opacity = '0';
+        element.style.visibility = 'visible';
+        element.style.display = 'block'; // Ensure element is displayed
+      });
+  });
+}
+
 // Update animations with mobile variants
 const animations = {
   'hdr-1': {
@@ -156,6 +169,15 @@ const loadDependencies = async () => {
     ]);
     await loadScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js');
     gsap.registerPlugin(ScrollTrigger);
+    
+    // Initialize animations after dependencies are loaded
+    if (window.Webflow) {
+      window.Webflow ||= [];
+      window.Webflow.push(initializeAnimations);
+    } else {
+      initializeAnimations();
+    }
+    
     return true;
   } catch (error) {
     console.error('Failed to load dependencies:', error);
@@ -203,12 +225,19 @@ function applyTrigger(element, animConfig) {
   
   instances.set(element, { split, target, config });
 
+  // Set initial state for the parent element
+  gsap.set(element, { opacity: 1 });
+
   const scrollAnimation = {
     ...config.from,
     scrollTrigger: {
       ...DEFAULTS.scrollTrigger,
       trigger: element,
-      once: true
+      once: true,
+      onEnter: () => {
+        // Ensure element is visible when animation starts
+        gsap.set(element, { opacity: 1 });
+      }
     }
   };
 
@@ -270,13 +299,5 @@ function initializeAnimations() {
 }
 
 // Initialize
-loadDependencies().then(success => {
-  if (success) {
-    if (window.Webflow) {
-      window.Webflow ||= [];
-      window.Webflow.push(initializeAnimations);
-    } else {
-      initializeAnimations();
-    }
-  }
-}); 
+setInitialState(); // Set initial state immediately
+loadDependencies(); // Load dependencies and initialize animations 

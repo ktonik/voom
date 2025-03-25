@@ -10,7 +10,7 @@ Add this script to your project before the closing `</body>` tag:
 
 Current version:
 ```html
-<script src="https://cdn.jsdelivr.net/gh/ktonik/voom@v1.0.5/dist/voom-demo.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/ktonik/voom@v1.0.6/dist/voom-demo.min.js"></script>
 ```
 
 Alternative CDN links:
