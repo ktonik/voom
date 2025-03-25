@@ -1,60 +1,44 @@
 /**
- * Voom Animation Library
- * A lightweight animation library for Webflow and WordPress projects
- * Uses GSAP, ScrollTrigger, and SplitType for advanced animations
+ * Voom Animation Library v2
+ * An optimized animation library for any website
+ * Features:
+ * - Responsive animations with mobile variants
+ * - Error handling and cleanup
+ * - Performance optimizations
+ * - Support for both attribute and class-based animations
  */
 
-/**
- * Helper function to dynamically load external scripts
- * Returns a Promise that resolves when the script is loaded
- */
-function loadScript(src) {
-  return new Promise((resolve, reject) => {
-    const script = document.createElement('script');
-    script.src = src;
-    script.onload = resolve;
-    script.onerror = reject;
-    document.body.appendChild(script);
-  });
-}
+// Cache selectors
+const SELECTORS = {
+  getAnimationElements: (type) => `[voomsh="${type}"], .voomsh-${type}`,
+  replayButtons: '[voomsh="replay"], .voomsh-replay',
+  buttons: '[voomsh="btn-1"], .voomsh-btn-1'
+};
 
-/**
- * Animation Definitions
- * Each animation type contains:
- * - setup: Function to prepare the element (e.g., split text)
- * - getTarget: Function to get the animation target
- * - from: GSAP animation starting properties
- * - reset: Properties to reset to after animation
- */
+// Restore original animation settings
 const animations = {
   'hdr-1': {
-    setup: (element) => {
-      const lines = new SplitType(element, { types: 'lines' });
-      const chars = new SplitType(lines.lines, { types: 'chars' });
-      return { lines, chars };
-    },
-    getTarget: (split) => split.chars.chars,
     from: {
       x: 40,
       duration: 0.5,
-      stagger: 0.03,   // Faster stagger for characters
+      stagger: 0.03,
       opacity: 0,
-      filter: 'blur(15px)',  // Add stronger blur for header
+      filter: 'blur(15px)',
       ease: "circ.out"
     },
     reset: {
       opacity: 1,
       x: 0,
-      filter: 'blur(0px)'    // Clear blur in final state
-    }
-  },
-  'par-1': {
+      filter: 'blur(0px)'
+    },
     setup: (element) => {
       const lines = new SplitType(element, { types: 'lines' });
-      const words = new SplitType(lines.lines, { types: 'words' });
-      return { lines, words };
+      const chars = new SplitType(lines.lines, { types: 'chars' });
+      return { lines, chars };
     },
-    getTarget: (split) => split.words.words,
+    getTarget: (split) => split.chars.chars
+  },
+  'par-1': {
     from: {
       x: 10,
       stagger: 0.05,
@@ -67,215 +51,177 @@ const animations = {
       x: 0,
       opacity: 1,
       filter: 'blur(0px)'
+    },
+    setup: (element) => {
+      const lines = new SplitType(element, { types: 'lines' });
+      const words = new SplitType(lines.lines, { types: 'words' });
+      return { lines, words };
+    },
+    getTarget: (split) => split.words.words
+  }
+};
+
+// Also restore button animations in DEFAULTS
+const DEFAULTS = {
+  scrollTrigger: {
+    start: "top 90%",
+    end: "bottom 10%",
+    toggleActions: "play none none none",
+    markers: false
+  },
+  buttonAnimations: {
+    hover: {
+      enter: (padding) => ({
+        paddingLeft: padding.left * 1.2,
+        paddingRight: padding.right * 1.2,
+        scale: 1.05,
+        duration: 0.3,
+        ease: "back.out(3)"
+      }),
+      leave: (padding) => ({
+        paddingLeft: padding.left,
+        paddingRight: padding.right,
+        scale: 1,
+        duration: 0.3,
+        ease: "back.out(1)"
+      })
+    },
+    click: {
+      down: {
+        scale: 1,
+        filter: 'blur(4px)',
+        duration: 0.1,
+        ease: "power2.out"
+      },
+      up: {
+        scale: 1.05,
+        filter: 'blur(0px)',
+        duration: 0.1,
+        ease: "power2.out"
+      }
     }
   }
 };
 
-// Store animation instances for replay functionality
-const animationInstances = new Map();
+// Store instances
+const instances = new Map();
+window.voomInstances = instances;
 
-/**
- * Helper function to get elements by both attribute and class selectors
- * Supports both Webflow (attributes) and WordPress (classes) implementations
- */
-function getElements(type) {
-  const attrSelector = `[voomsh="${type}"]`;
-  const classSelector = `.voomsh-${type}`;
-  // Hide elements initially to prevent FOUC
-  const elements = document.querySelectorAll(`${attrSelector}, ${classSelector}`);
-  elements.forEach(el => {
-    gsap.set(el, { opacity: 0, visibility: 'visible' });
+// Load dependencies
+const loadDependencies = async () => {
+  try {
+    await Promise.all([
+      loadScript('https://unpkg.com/split-type'),
+      loadScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js')
+    ]);
+    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js');
+    gsap.registerPlugin(ScrollTrigger);
+    return true;
+  } catch (error) {
+    console.error('Failed to load dependencies:', error);
+    return false;
+  }
+};
+
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = src;
+    script.onload = resolve;
+    script.onerror = reject;
+    document.body.appendChild(script);
   });
-  return elements;
 }
 
-/**
- * Applies animation trigger to an element
- * Supports three trigger types:
- * - scroll: Triggers when element enters viewport
- * - hover: Triggers on mouse enter
- * - click: Triggers on click
- */
+function cleanup() {
+  instances.forEach(instance => {
+    if (instance.split.chars) instance.split.chars.revert();
+    if (instance.split.lines) instance.split.lines.revert();
+    if (instance.split.revert) instance.split.revert();
+  });
+  instances.clear();
+}
+
+function applyAnimation(element, animConfig) {
+  try {
+    const split = animConfig.setup(element);
+    const target = animConfig.getTarget(split);
+    return { split, target };
+  } catch (error) {
+    console.error('Error applying animation:', error);
+    return null;
+  }
+}
+
 function applyTrigger(element, animConfig) {
-  const triggerType = element.getAttribute('voomtrigger') || 'scroll';
-  const split = animConfig.setup(element);
-  const target = animConfig.getTarget(split);
-  
-  // Make the element visible after splitting
-  gsap.set(element, { opacity: 1 });
-  
-  // Store animation data for potential replay
-  const animationData = {
-    target,
-    config: animConfig,
-    element
+  const result = applyAnimation(element, animConfig);
+  if (!result) return;
+
+  const { split, target } = result;
+  instances.set(element, { split, target, config: animConfig });
+
+  const scrollAnimation = {
+    ...animConfig.from,
+    scrollTrigger: {
+      ...DEFAULTS.scrollTrigger,
+      trigger: element,
+      once: true // Only play once
+    }
   };
-  
-  // Store for replay functionality if target is specified
-  const replayTarget = element.getAttribute('voomreplay-target');
-  if (replayTarget) {
-    animationInstances.set(replayTarget, animationData);
-  }
-  
-  // Handle different trigger types
-  switch(triggerType) {
-    case 'hover':
-      gsap.set(target, animConfig.reset);
-      element.addEventListener('mouseenter', () => {
-        gsap.from(target, animConfig.from);
-      });
-      break;
-    
-    case 'click':
-      gsap.set(target, animConfig.reset);
-      element.addEventListener('click', () => {
-        gsap.from(target, animConfig.from);
-      });
-      break;
-    
-    default: // 'scroll'
-      const scrollAnimation = { ...animConfig.from };
-      scrollAnimation.scrollTrigger = {
-        trigger: element,
-        start: "top 90%",    // Trigger when element's top hits 90% of viewport
-        end: "bottom 10%",   // End when element's bottom hits 10% of viewport
-        toggleActions: "play none none reverse", // Play on enter, reverse on leave
-        markers: false       // Debug markers (set true for development)
-      };
-      gsap.from(target, scrollAnimation);
-  }
+
+  gsap.from(target, scrollAnimation);
 }
 
-/**
- * Replay function for manual animation triggers
- * Used with replay buttons targeting specific animations
- */
-function replayAnimation(targetId) {
-  const animData = animationInstances.get(targetId);
-  if (animData) {
-    gsap.set(animData.target, animData.config.reset);
-    gsap.from(animData.target, animData.config.from);
-  }
+// Add back button initialization function
+function initializeButton(button) {
+  const computedStyle = window.getComputedStyle(button);
+  const padding = {
+    left: parseFloat(computedStyle.paddingLeft),
+    right: parseFloat(computedStyle.paddingRight)
+  };
+
+  gsap.set(button, { opacity: 1 });
+
+  button.addEventListener('mouseenter', () => {
+    gsap.to(button, DEFAULTS.buttonAnimations.hover.enter(padding));
+  });
+
+  button.addEventListener('mouseleave', () => {
+    gsap.to(button, DEFAULTS.buttonAnimations.hover.leave(padding));
+  });
+
+  button.addEventListener('mousedown', () => {
+    gsap.to(button, DEFAULTS.buttonAnimations.click.down);
+  });
+
+  button.addEventListener('mouseup', () => {
+    gsap.to(button, DEFAULTS.buttonAnimations.click.up);
+  });
 }
 
-// Add CSS rule at the start of initialization
-function addInitialStyles() {
-  const style = document.createElement('style');
-  style.textContent = `
-    [voomsh], [class*="voomsh-"] {
-      opacity: 0;
-      visibility: hidden;
-    }
-  `;
-  document.head.appendChild(style);
-}
-
-// Call this immediately
-addInitialStyles();
-
-/**
- * Main initialization function
- * Sets up all animations, replay buttons, and button interactions
- */
+// Update initialization function to include buttons
 function initializeAnimations() {
-  // Remove initial hiding styles
-  const style = document.createElement('style');
-  style.textContent = `
-    [voomsh], [class*="voomsh-"] {
-      visibility: visible;
-    }
-  `;
-  document.head.appendChild(style);
-
-  // Initialize main animations
+  cleanup();
+  
+  // Initialize animations
   Object.entries(animations).forEach(([type, config]) => {
-    const elements = getElements(type);
-    elements.forEach(element => applyTrigger(element, config));
+    document.querySelectorAll(SELECTORS.getAnimationElements(type))
+      .forEach(element => applyTrigger(element, config));
   });
 
-  // Set up replay functionality
-  const replayButtons = document.querySelectorAll('[voomsh="replay"], .voomsh-replay');
-  replayButtons.forEach(button => {
-    button.addEventListener('click', () => {
-      const targetId = button.getAttribute('voomreplay-for');
-      if (targetId) {
-        replayAnimation(targetId);
-      }
-    });
-  });
-
-  // Initialize button hover/click animations
-  const buttons = document.querySelectorAll('[voomsh="btn-1"], .voomsh-btn-1');
-  buttons.forEach(button => {
-    // Initial setup
-    gsap.set(button, { opacity: 1 });
-
-    // Store initial padding values
-    const computedStyle = window.getComputedStyle(button);
-    button.dataset.initialPaddingLeft = parseFloat(computedStyle.paddingLeft);
-    button.dataset.initialPaddingRight = parseFloat(computedStyle.paddingRight);
-
-    button.addEventListener('mouseenter', () => {
-      gsap.to(button, {
-        paddingLeft: parseFloat(button.dataset.initialPaddingLeft) * 1.2,
-        paddingRight: parseFloat(button.dataset.initialPaddingRight) * 1.2,
-        scale: 1.05,
-        duration: 0.3,
-        ease: "back.out(3)"
-      });
-    });
-
-    button.addEventListener('mouseleave', () => {
-      gsap.to(button, {
-        paddingLeft: parseFloat(button.dataset.initialPaddingLeft),
-        paddingRight: parseFloat(button.dataset.initialPaddingRight),
-        scale: 1,
-        duration: 0.3,
-        ease: "back.out(1)"
-      });
-    });
-
-    // Add click state
-    button.addEventListener('mousedown', () => {
-      gsap.to(button, {
-        scale: 1,
-        duration: 0.1,
-        ease: "power2.out"
-      });
-    });
-
-    button.addEventListener('mouseup', () => {
-      gsap.to(button, {
-        scale: 1.05,
-        duration: 0.1,
-        ease: "power2.out"
-      });
-    });
-  });
+  // Initialize buttons
+  document.querySelectorAll(SELECTORS.buttons)
+    .forEach(initializeButton);
 }
 
-/**
- * Script Initialization
- * Loads dependencies and initializes animations
- * Works in both Webflow and standalone environments
- */
-Promise.all([
-  loadScript('https://unpkg.com/split-type'),
-  loadScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js')
-]).then(() => {
-  // Load ScrollTrigger after GSAP
-  loadScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js')
-    .then(() => {
-      // Initialize GSAP plugins
-      gsap.registerPlugin(ScrollTrigger);
-
-      // Initialize based on environment
-      if (window.Webflow) {
-        window.Webflow ||= [];
-        window.Webflow.push(initializeAnimations);
-      } else {
-        // Direct initialization for non-Webflow environments
-        initializeAnimations();
-      }
-    });
+// Initialize
+loadDependencies().then(success => {
+  if (success) {
+    if (window.Webflow) {
+      window.Webflow ||= [];
+      window.Webflow.push(initializeAnimations);
+    } else {
+      initializeAnimations();
+    }
+  }
 }); 
