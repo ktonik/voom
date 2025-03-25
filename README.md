@@ -10,8 +10,16 @@ Add this script to your project before the closing `</body>` tag:
 
 Current version:
 ```html
-<script src="https://cdn.jsdelivr.net/gh/ktonik/voom@v1.0.4/dist/voom-demo.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/ktonik/voom@v1.0.5/dist/voom-demo.min.js"></script>
 ```
+
+Alternative CDN links:
+```html
+<!-- Get latest release -->
+<script src="https://cdn.jsdelivr.net/gh/ktonik/voom@latest/dist/voom-demo.min.js"></script>
+```
+
+Note: Using version-specific links (like v1.0.5) is recommended for production sites to ensure stability.
 
 ## Usage
 
@@ -35,7 +43,6 @@ For Wordpress (Elementor, Gutenberg and other builders), add class name for exam
   Hover & Click Me
 </button>
 ```
-
 ### Add Attribute
 For Webflow (via setting panel) add attribute name, for example `voomsh="hdr-1"`
 
@@ -55,7 +62,6 @@ For Webflow (via setting panel) add attribute name, for example `voomsh="hdr-1"`
   Hover & Click Me
 </button>
 ```
-
 ### Thats it, you are good to go! 
 
 ## Dependencies
@@ -65,3 +71,4 @@ This script automatically loads:
 - Split Type
 
 No need to add these separately!
+
