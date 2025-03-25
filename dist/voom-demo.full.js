@@ -15,21 +15,41 @@ const SELECTORS = {
   buttons: '[voomsh="btn-1"], .voomsh-btn-1'
 };
 
-// Restore original animation settings
+// Add mobile detection utility
+const isMobile = () => window.innerWidth < 768;
+
+// Update animations with mobile variants
 const animations = {
   'hdr-1': {
-    from: {
-      x: 40,
-      duration: 0.5,
-      stagger: 0.03,
-      opacity: 0,
-      filter: 'blur(15px)',
-      ease: "circ.out"
+    desktop: {
+      from: {
+        x: 40,
+        duration: 0.5,
+        stagger: 0.03,
+        opacity: 0,
+        filter: 'blur(15px)',
+        ease: "circ.out"
+      },
+      reset: {
+        opacity: 1,
+        x: 0,
+        filter: 'blur(0px)'
+      }
     },
-    reset: {
-      opacity: 1,
-      x: 0,
-      filter: 'blur(0px)'
+    mobile: {
+      from: {
+        x: 20,          // Reduced movement
+        duration: 0.3,   // Faster animation
+        stagger: 0.02,   // Faster stagger
+        opacity: 0,
+        filter: 'blur(4px)', // Reduced blur
+        ease: "power1.out"  // Simpler easing
+      },
+      reset: {
+        opacity: 1,
+        x: 0,
+        filter: 'blur(0px)'
+      }
     },
     setup: (element) => {
       const lines = new SplitType(element, { types: 'lines' });
@@ -39,18 +59,35 @@ const animations = {
     getTarget: (split) => split.chars.chars
   },
   'par-1': {
-    from: {
-      x: 10,
-      stagger: 0.05,
-      duration: 0.3,
-      opacity: 0,
-      filter: 'blur(5px)',
-      ease: "circ.out"
+    desktop: {
+      from: {
+        x: 10,
+        stagger: 0.05,
+        duration: 0.3,
+        opacity: 0,
+        filter: 'blur(5px)',
+        ease: "circ.out"
+      },
+      reset: {
+        x: 0,
+        opacity: 1,
+        filter: 'blur(0px)'
+      }
     },
-    reset: {
-      x: 0,
-      opacity: 1,
-      filter: 'blur(0px)'
+    mobile: {
+      from: {
+        x: 5,           // Minimal movement
+        stagger: 0.03,   // Faster stagger
+        duration: 0.2,   // Faster animation
+        opacity: 0,
+        filter: 'blur(2px)', // Minimal blur
+        ease: "power1.out"  // Simpler easing
+      },
+      reset: {
+        x: 0,
+        opacity: 1,
+        filter: 'blur(0px)'
+      }
     },
     setup: (element) => {
       const lines = new SplitType(element, { types: 'lines' });
@@ -61,13 +98,16 @@ const animations = {
   }
 };
 
-// Also restore button animations in DEFAULTS
+// Update DEFAULTS with mobile-optimized ScrollTrigger
 const DEFAULTS = {
   scrollTrigger: {
     start: "top 90%",
     end: "bottom 10%",
     toggleActions: "play none none none",
-    markers: false
+    markers: false,
+    // Mobile optimization flags
+    fastScrollEnd: true,
+    preventOverlaps: true
   },
   buttonAnimations: {
     hover: {
@@ -158,21 +198,24 @@ function applyTrigger(element, animConfig) {
   if (!result) return;
 
   const { split, target } = result;
-  instances.set(element, { split, target, config: animConfig });
+  const variant = isMobile() ? 'mobile' : 'desktop';
+  const config = animConfig[variant];
+  
+  instances.set(element, { split, target, config });
 
   const scrollAnimation = {
-    ...animConfig.from,
+    ...config.from,
     scrollTrigger: {
       ...DEFAULTS.scrollTrigger,
       trigger: element,
-      once: true // Only play once
+      once: true
     }
   };
 
   gsap.from(target, scrollAnimation);
 }
 
-// Add back button initialization function
+// Update button initialization for mobile
 function initializeButton(button) {
   const computedStyle = window.getComputedStyle(button);
   const padding = {
@@ -182,20 +225,32 @@ function initializeButton(button) {
 
   gsap.set(button, { opacity: 1 });
 
-  button.addEventListener('mouseenter', () => {
-    gsap.to(button, DEFAULTS.buttonAnimations.hover.enter(padding));
-  });
+  // Only add hover effects on desktop
+  if (!isMobile()) {
+    button.addEventListener('mouseenter', () => {
+      gsap.to(button, DEFAULTS.buttonAnimations.hover.enter(padding));
+    });
 
-  button.addEventListener('mouseleave', () => {
-    gsap.to(button, DEFAULTS.buttonAnimations.hover.leave(padding));
-  });
+    button.addEventListener('mouseleave', () => {
+      gsap.to(button, DEFAULTS.buttonAnimations.hover.leave(padding));
+    });
+  }
 
+  // Simplified click animation for mobile
   button.addEventListener('mousedown', () => {
-    gsap.to(button, DEFAULTS.buttonAnimations.click.down);
+    gsap.to(button, {
+      scale: 0.95,
+      duration: 0.1,
+      ease: "power1.out"
+    });
   });
 
   button.addEventListener('mouseup', () => {
-    gsap.to(button, DEFAULTS.buttonAnimations.click.up);
+    gsap.to(button, {
+      scale: 1,
+      duration: 0.1,
+      ease: "power1.out"
+    });
   });
 }
 
